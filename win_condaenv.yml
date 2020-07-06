@@ -5,14 +5,14 @@ channels:
   - prjemian
 dependencies:
   - python=3.6.*
-  - pyqt=5.*
-  - numpy
-  - pillow
-  - vtk
+  - pyqt=5.9.*
+  - numpy=1.18.*
+  - pillow=7.1.*
+  - vtk=8.2.*
   - pytables
   - h5py
   - scipy
-  - spec2nexus
+  - spec2nexus=2021.*
   - ipykernel
-  - xrayutilities
+  - xrayutilities=1.6.*
   - pyedflib
