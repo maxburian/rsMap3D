@@ -36,7 +36,8 @@ class QGridMapper(AbstractGridMapper):
                 self.dataSource.availableScans[0],
                 self.nx, self.ny, self.nz,
                 self.outputFileName,
-                self.outputType)
+                self.outputType,
+                self.outFormat)
     
     '''
     This map provides an x, y, z grid of the data.
@@ -53,6 +54,7 @@ class QGridMapper(AbstractGridMapper):
         gridder = xu.Gridder3D(self.nx, self.ny, self.nz)
         gridder.KeepData(True)
         rangeBounds = self.dataSource.getRangeBounds()
+        logger.debug(rangeBounds)
         try:
             # repository version or xrayutilities > 1.0.6
             gridder.dataRange(rangeBounds[0], rangeBounds[1], 
@@ -77,12 +79,19 @@ class QGridMapper(AbstractGridMapper):
                 if imageSize*4*numImages <= maxImageMem:
                     kwargs['mask'] = imageToBeUsed[scan]
                     qx, qy, qz, intensity = self.dataSource.rawmap((scan,), **kwargs)
-                    
                     # convert data to rectangular grid in reciprocal space
-                    gridder(qx, qy, qz, intensity)
-                    progress += 100
-                    if self.progressUpdater is not None:
-                        self.progressUpdater(progress)
+                    try:
+                        gridder(qx, qy, qz, intensity)
+                        progress += 100
+                        if self.progressUpdater is not None:
+                            self.progressUpdater(progress)
+                    except InputError as ex:
+                        print ("Wrong Input to gridder")
+                        print ("qx Size: " + str( qx.shape))
+                        print ("qy Size: " + str( qy.shape))
+                        print ("qz Size: " + str( qz.shape))
+                        print ("intensity Size: " + str(intensity.shape))
+                        raise InputError(ex)
                 else:
                     nPasses = int(imageSize*4*numImages/ maxImageMem + 1)
                     

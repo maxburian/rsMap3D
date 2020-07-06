@@ -31,8 +31,9 @@ class VTIGridWriter(AbstractGridWriter):
                             "3,4,5 - number of pixels for output in " + 
                             "x/y/z directions" +
                             "6 - output file name" + 
-                            "7. outputFileType")
-        elif (len( fileInfo) != 7):
+                            "7 - outputFileType"+
+                            "8 - outputFormat")
+        elif (len( fileInfo) != 8):
             raise ValueError(self.whatFunction() +
                             "passed no filename information " +
                             "requires a tuple with six members:\n"
@@ -42,7 +43,8 @@ class VTIGridWriter(AbstractGridWriter):
                             "3,4,5 - number of pixels for output in " + 
                             "x/y/z directions" +
                             "6 - output file name" + 
-                            "7. outputFileType")
+                            "7 - outputFileType"+
+                            "8 - outputFormat")
         self.fileInfo.append(fileInfo[0])
         self.fileInfo.append(fileInfo[1])
         self.nx = fileInfo[2]
@@ -50,6 +52,7 @@ class VTIGridWriter(AbstractGridWriter):
         self.nz = fileInfo[4]
         self.outputFileName = fileInfo[5]
         self.outType = fileInfo[6]
+        self.outFormat = fileInfo[7]
         
         
         
@@ -64,6 +67,10 @@ class VTIGridWriter(AbstractGridWriter):
         logger.debug("self.gridData.shape: " + str(self.gridData.shape))
         da = np.transpose(self.gridData).reshape(self.gridData.size)
         logger.debug("da.shape: " + str(da.shape)) 
+        
+        if self.outFormat == "LOG":
+            da = np.log(da)
+                
         data_array = numpy_support.numpy_to_vtk(da)
         logger.debug("self.gridData.shape: " + str(self.gridData.shape))
         

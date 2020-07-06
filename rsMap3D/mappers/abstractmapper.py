@@ -23,8 +23,9 @@ class AbstractGridMapper(object):
                  outputFileName, \
                  nx=200, ny=201, nz=202, \
                  transform = None, \
-                 gridWriter = None,
-                 appConfig = None):
+                 gridWriter = None,\
+                 appConfig = None,\
+                 outFormat = "LIN"):
         '''
         Constructor
         :param dataSource: source of scan data
@@ -48,6 +49,7 @@ class AbstractGridMapper(object):
         self.haltMap = False
         self.progressUpdater = None
         self.gridWriter = gridWriter
+        self.outFormat = outFormat
         if transform is None:
             self.transform = UnityTransform3D()
         else:

@@ -41,6 +41,7 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
         
         self.currentDetector = \
             detConfig.getDetectorById(firstDetectorID)
+        self.UBmatrixFile = None
         self.progress = 0
         self.progressInc = 1
         self.progressMax = 1
@@ -53,7 +54,7 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
         logger.debug(METHOD_EXIT_STR)
 
     #@profile
-    def findImageQs(self, angles, ub, en):
+    def findImageQs(self, angles, ub, en, HtoQx=1.,KtoQy=1., LtoQz=1.):
         '''
         Find the minimum/maximum q boundaries associated with each scan given 
         the angles, energy and UB matrix.
@@ -97,7 +98,7 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
                 self.progressUpdater(self.progress, self.progressMax)
             self.progress += self.progressInc        
             angleList = []
-            logger.debug("angles " + str(angles) )
+            #logger.debug("angles " + str(angles) )
             for i in range(len(angles[0])):
                 angleList.append(angles[:,i])
             if ub is None:
@@ -109,7 +110,11 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
                                          roi=roi, \
                                          Nav=nav, \
                                          UB = ub)
-                
+            
+            qx=qx*HtoQx
+            qy=qy*KtoQy
+            qz=qz*LtoQz
+            
             qxTrans, qyTrans, qzTrans = self.transform.do3DTransform(qx, qy, qz)
             
             idx = range(len(qxTrans))
@@ -136,11 +141,11 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
                 firstImageInPass = int(thisPass*numImages/nPasses)
                 lastImageInPass = int((thisPass+1)*numImages/nPasses)
                 angleList = []
-                logger.debug("angles " + str(angles) )
+                #logger.debug("angles " + str(angles) )
                 for i in range(len(angles[0])):
-                    logger.debug("angles in pass " + str(angles[firstImageInPass:lastImageInPass,i]) )
+                    #logger.debug("angles in pass " + str(angles[firstImageInPass:lastImageInPass,i]) )
                     angleList.append(angles[firstImageInPass:lastImageInPass,i])
-                logger.debug("angleList " + str(angleList) )
+                #logger.debug("angleList " + str(angleList) )
                 if ub is None:
                     qx, qy, qz = hxrd.Ang2Q.area(*angleList, \
                                              roi=roi, \
@@ -150,6 +155,10 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
                                              roi=roi, \
                                              Nav=nav, \
                                              UB = ub)
+                
+                qx=qx*HtoQx
+                qy=qy*KtoQy
+                qz=qz*LtoQz
                     
                 qxTrans, qyTrans, qzTrans = self.transform.do3DTransform(qx, qy, qz)
                 
@@ -161,7 +170,7 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
                 [zmin.append(np.min(qzTrans[i])) for i in idx] 
                 [zmax.append(np.max(qzTrans[i])) for i in idx] 
                 
-        logger.debug(METHOD_EXIT_STR % str((xmin, xmax, ymin, ymax, zmin, zmax))) 
+        #logger.debug(METHOD_EXIT_STR % str((xmin, xmax, ymin, ymax, zmin, zmax))) 
         return (xmin, xmax, ymin, ymax, zmin, zmax)
 
     def getReferenceNames(self):
@@ -203,7 +212,7 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
         if len(dataKeys) == 0:
             raise ScanDataMissingException("No Scan Data Found for scan " + 
                                            scan.scanNum)
-        logger.debug("dataKeys:  %s", dataKeys)
+        #logger.debug("dataKeys:  %s", dataKeys)
         geoAngles = np.zeros((len(scan.data[list(dataKeys)[0]]), len(angleNames)))
         for i, name in enumerate(angleNames):
             v = scan.data.get(name)
@@ -290,6 +299,10 @@ class SpecXMLDrivenDataSource(AbstractXrayutilitiesDataSource):
     
     def setCurrentDetector(self, currentDetector):
         self.currentDetector = currentDetector
+    
+    def setUBmatrixFile(self, UBmatrixFileName):
+        self.UBmatrixFile = UBmatrixFileName
+        logger.debug(self.UBmatrixFile)
         
     def setScanTypeUsed(self, scanType, used):
         for scan in self.availableScans:

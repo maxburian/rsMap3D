@@ -40,7 +40,7 @@ class SpecXMLDrivenFileForm(AbstractImagePerFileView, UsesXMLInstConfig, UsesXML
 
     def _createHKLOutput(self, layout, row):
         logger.debug(METHOD_ENTER_STR)
-        label = qtWidgets.QLabel("HKL output")
+        label = qtWidgets.QLabel("HKL output:")
         layout.addWidget(label, row, 0)
         self.hklCheckbox = qtWidgets.QCheckBox()
         layout.addWidget(self.hklCheckbox, row, 1)
@@ -49,22 +49,19 @@ class SpecXMLDrivenFileForm(AbstractImagePerFileView, UsesXMLInstConfig, UsesXML
         
     def _createOutputType(self, layout, row):
         logger.debug(METHOD_ENTER_STR)
-        label = qtWidgets.QLabel("Output Type")
+        label = qtWidgets.QLabel("Output Type:")
         self.outTypeChooser = qtWidgets.QComboBox()
         self.outTypeChooser.addItem(self.SIMPLE_GRID_MAP_STR)
         self.outTypeChooser.addItem(self.POLE_MAP_STR)
         layout.addWidget(label, row, 0)
         layout.addWidget(self.outTypeChooser, row, 1)
         self.outTypeChooser.currentIndexChanged[str].connect(self._outputTypeChanged)
-#         self.connect(self.outTypeChooser, \
-#                      qtCore.SIGNAL(CURRENT_INDEX_CHANGED_SIGNAL), \
-#                      self._outputTypeChanged)
         logger.debug(METHOD_EXIT_STR)
         
         
     def _createScanNumberInput(self, layout, row):
         logger.debug(METHOD_ENTER_STR)
-        label = qtWidgets.QLabel("Scan Numbers")
+        label = qtWidgets.QLabel("Scan Numbers:")
         self.scanNumsTxt = qtWidgets.QLineEdit()
         rx = qtCore.QRegExp(self.SCAN_LIST_REGEXP)
         self.scanNumsTxt.setValidator(qtGui.QRegExpValidator(rx,self.scanNumsTxt))
@@ -76,7 +73,7 @@ class SpecXMLDrivenFileForm(AbstractImagePerFileView, UsesXMLInstConfig, UsesXML
     def getMapAsHKL(self):
         '''
         '''
-#        Not sure if we need this JPH
+#       Not sure if we need this JPH
         logger.debug(METHOD_ENTER_STR)
         mapAsHkl = self.hklCheckbox.isChecked()
         logger.debug(METHOD_EXIT_STR)

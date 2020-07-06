@@ -76,6 +76,7 @@ class MainDialog(qtWidgets.QMainWindow):
         self.tabs.setTabEnabled(self.processTabIndex, False)
         self.tabs.show()
         self.setCentralWidget(self.tabs)
+        self.setWindowTitle("rsMap3D for SLS X04SA")
 
         #Connect signals
         self.unblockTabsForLoad.connect(self._unblockTabsForLoad)

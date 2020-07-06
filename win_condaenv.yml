@@ -1,0 +1,18 @@
+name: py3p6_rsmap3d
+channels:
+  - defaults
+  - conda-forge
+  - prjemian
+dependencies:
+  - python=3.6.*
+  - pyqt=5.*
+  - numpy
+  - pillow
+  - vtk
+  - pytables
+  - h5py
+  - scipy
+  - spec2nexus
+  - ipykernel
+  - xrayutilities
+  - pyedflib

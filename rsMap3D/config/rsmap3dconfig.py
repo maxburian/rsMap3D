@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 NAMESPACE = '{https://subversion.xray.aps.anl.gov/RSM/rsMap3DConfig}'
 MAX_IMAGE_MEMORY = NAMESPACE + "maxImageMemory"
 CONFIG_FILENAME_DEFAULT = ".rsMap3D"
-MAX_IMAGE_MEMORY_BYTES = "100000000"
+MAX_IMAGE_MEMORY_BYTES = "1000000000"
 
 class RSMap3DConfig():
     """

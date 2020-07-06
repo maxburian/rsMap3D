@@ -18,6 +18,7 @@ import traceback
 from rsMap3D.transforms.unitytransform3d import UnityTransform3D
 from rsMap3D.transforms.polemaptransform3d import PoleMapTransform3D
 # Input forms Looking for a way to set these up.
+from rsMap3D.gui.input.x04saspecscanfileform import X04saSpecScanFileForm
 from rsMap3D.gui.input.s33specscanfileform import S33SpecScanFileForm
 from rsMap3D.gui.input.s34hdfescanfileform import S34HDFEScanFileForm
 from rsMap3D.gui.input.s1highenergydiffractionform import S1HighEnergyDiffractionForm
@@ -57,6 +58,7 @@ class FileInputController(qtWidgets.QDialog):
         self.layout = qtWidgets.QVBoxLayout()
         #Build a list of fileForms
         self.fileForms = []
+        self.fileForms.append(X04saSpecScanFileForm)
         self.fileForms.append(S33SpecScanFileForm)
         self.fileForms.append(S34HDFEScanFileForm)
         self.fileForms.append(S1HighEnergyDiffractionForm)

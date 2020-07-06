@@ -45,9 +45,9 @@ class UsesXMLDetectorConfig(AbstractFileView):
         '''
         super(UsesXMLDetectorConfig, self).__init__(parent, **kwargs)
         logger.debug(METHOD_ENTER_STR)
-        self.roixmin = 1
+        self.roixmin = 0
         self.roixmax = 680
-        self.roiymin = 1
+        self.roiymin = 0
         self.roiymax = 480
         self.currentDetector = ""
         self.detConfig = None
@@ -89,7 +89,7 @@ class UsesXMLDetectorConfig(AbstractFileView):
         layout.addWidget(self.detConfigFileButton, row, 2)
 
         row += 1
-        label = qtWidgets.QLabel("Select Detector")
+        label = qtWidgets.QLabel("Select Detector:")
         self.detSelect = qtWidgets.QComboBox()
         layout.addWidget(label, row, 0)
         layout.addWidget(self.detSelect, row, 1)
@@ -148,6 +148,7 @@ class UsesXMLDetectorConfig(AbstractFileView):
             if self.detConfigTxt.text() != "":
                 try:
                     self.detFileOk = self.isDetFileOk()
+                    #self.detConfigTxt.setEnabled(False)
                     #self.updateDetectorList()
                     #self.updateROIandNumAvg()
                 except DetectorConfigException as ex:
@@ -164,6 +165,10 @@ class UsesXMLDetectorConfig(AbstractFileView):
                              WARNING_STR,\
                              "The filename entered for the detector " + \
                              "configuration is invalid")
+            if self.detSelect.count() >0:                 
+                oldNumDet = self.detSelect.count()
+                for index in reversed(range(oldNumDet)):
+                    self.detSelect.removeItem(index)                 
             logger.debug(METHOD_EXIT_STR)
 
 
@@ -289,14 +294,17 @@ class UsesXMLDetectorConfig(AbstractFileView):
         logger.debug(METHOD_ENTER_STR)
 #         detConfig = \
 #             DetectorGeometryForXrayutilitiesReader(self.detConfigTxt.text())
-        logger.debug("self.currentDetector " + str(self.currentDetector))
-        detector = self.detConfig.getDetectorById(str(self.currentDetector))
-        detSize = self.detConfig.getNpixels(detector)
-        xmax = detSize[0]
-        ymax = detSize[1]
-        self.roixmax = xmax
-        self.roiymax = ymax
-        self.updateROITxt()
+        try:
+            logger.debug("self.currentDetector " + str(self.currentDetector))
+            detector = self.detConfig.getDetectorById(str(self.currentDetector))
+            detSize = self.detConfig.getNpixels(detector)
+            xmax = detSize[0]
+            ymax = detSize[1]
+            self.roixmax = xmax
+            self.roiymax = ymax
+            self.updateROITxt()
+        except:
+            logger.debug("Some error occured.")
         logger.debug(METHOD_EXIT_STR)
 
     def updateROITxt(self):

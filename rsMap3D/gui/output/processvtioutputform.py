@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 class ProcessVTIOutputForm(AbstractOutputView):
     FORM_TITLE = "VTI Grid Output"
+    LIN_RADIO_NAME = "Linear"
+    LOG_RADIO_NAME = "Logarithmic"
     
     @staticmethod
     def createInstance(parent=None, appConfig=None):
@@ -37,6 +39,7 @@ class ProcessVTIOutputForm(AbstractOutputView):
         layout.addWidget(self.dataBox)
         layout.addWidget(controlBox)
         self.setLayout(layout)
+        self.linRadio.setChecked(True)
         self.outputType = BINARY_OUTPUT
         logger.debug(METHOD_EXIT_STR)
         
@@ -139,6 +142,20 @@ class ProcessVTIOutputForm(AbstractOutputView):
         dataLayout.addWidget(self.outFileTxt, row,1)
         self.outputFileButton = qtWidgets.QPushButton(BROWSE_STR)
         dataLayout.addWidget(self.outputFileButton, row, 2)
+        
+        row += 1
+        label = qtWidgets.QLabel("Output Format")
+        dataLayout.addWidget(label, row,0)
+        subdataLayout = qtWidgets.QHBoxLayout()
+        dataLayout.addLayout(subdataLayout, row,1)
+        self.outFormatGroup = qtWidgets.QButtonGroup(self)
+        self.linRadio = qtWidgets.QRadioButton(self.LIN_RADIO_NAME)
+        self.logRadio = qtWidgets.QRadioButton(self.LOG_RADIO_NAME)
+        self.outFormatGroup.addButton(self.linRadio, 1)
+        self.outFormatGroup.addButton(self.logRadio, 2)
+        subdataLayout.addWidget(self.linRadio)
+        subdataLayout.addWidget(self.logRadio)
+        
 
         row += 1
         label = qtWidgets.QLabel("Output Type")
@@ -146,7 +163,7 @@ class ProcessVTIOutputForm(AbstractOutputView):
         self.outputTypeSelect = qtWidgets.QComboBox()
         self.outputTypeSelect.addItem(BINARY_OUTPUT)
         self.outputTypeSelect.addItem(ASCII_OUTPUT)
-        dataLayout.addWidget(self.outputTypeSelect, row, 2)
+        dataLayout.addWidget(self.outputTypeSelect, row, 1)
         
         self.outputFileButton.clicked.connect(self._browseForOutputFile)
 #         self.connect(self.outputFileButton, \
@@ -218,18 +235,26 @@ class ProcessVTIOutputForm(AbstractOutputView):
         nz = int(self.zDimTxt.text())
         logger.debug( "nx,ny,nz %d,%d,%d" % (nx, ny, nz))
         outType = self.outputType
+        if self.linRadio.isChecked():
+            self.outFormat = "LIN"
+        else:
+            self.outFormat = "LOG"
+       
         if self.outputFileName == "":
             self.outputFileName = os.path.join(dataSource.projectDir,  \
                                                "%s.vti" %dataSource.projectName)
             self.setFileName[str].emit(self.outputFileName)
+            
         if os.access(os.path.dirname(self.outputFileName), os.W_OK):
             self.mapper = QGridMapper(dataSource, \
                                      self.outputFileName, \
                                      outType, \
                                      nx=nx, ny=ny, nz=nz, \
                                      transform = transform, \
-                                     gridWriter = gridWriter,
-                                     appConfig=self.appConfig)
+                                     gridWriter = gridWriter,\
+                                     appConfig=self.appConfig,\
+                                     outFormat = self.outFormat
+                                     )
             self.mapper.setGridWriter(VTIGridWriter())
             self.mapper.setProgressUpdater(self._updateProgress)
             self.mapper.doMap()

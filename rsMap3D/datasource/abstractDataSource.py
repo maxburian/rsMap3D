@@ -53,7 +53,7 @@ class AbstractDataSource(object):
     
     def getDetectorDimensions(self):
         '''
-        Return the dimensions (in pixels of the detector
+        Return the dimensions (in pixels) of the detector
         '''
         return self.detectorDimensions
     
