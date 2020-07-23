@@ -417,8 +417,8 @@ class X04SASpecDataSource(SpecXMLDrivenDataSource):
         f=open(imgfile,'rb')
         xraw=f.read()
         f.close()
-        im = struct.unpack("!%sH" % (len(xraw)//2),xraw)
-        return np.reshape(np.asarray(im[::2]),(self.getDetectorDimensions()[1],self.getDetectorDimensions()[0])).T
+        im = np.frombuffer(xraw, dtype=np.uint32).copy()
+        return np.reshape(im,(self.getDetectorDimensions()[1],self.getDetectorDimensions()[0])).T
 
     def rawmap(self,scans, angdelta=[0,0,0,0,0],
             adframes=None, mask = None):
