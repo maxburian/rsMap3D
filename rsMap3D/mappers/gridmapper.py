@@ -5,10 +5,29 @@
 
 import xrayutilities as xu
 from rsMap3D.mappers.abstractmapper import AbstractGridMapper
+from multiprocessing import Process, Queue
 import numpy as np
+from scipy.interpolate import griddata
 from xrayutilities.exception import InputError
 import logging
 logger = logging.getLogger(__name__)
+
+def wrapper_interpolate_frame(l_dataslice,q,indx):
+    '''
+    Interpolation function for gridder.data
+    '''
+    logger.info("Entering Interpolate Wrapper " + str(indx))
+    tempframe = l_dataslice[:,:,0]
+    n,m = tempframe.shape
+    x,y = np.mgrid[0:n,0:m]
+    n_slices =l_dataslice.shape[2]
+    for k in range(n_slices):
+        tempframe = l_dataslice[:,:,k]
+        mask = ~np.isnan(tempframe)
+        l_dataslice[:,:,k]=griddata((x[mask], y[mask]), tempframe[mask], (x, y), method='linear')
+    logger.info("Interpolate Wrapper " + str(indx)+" is done!")
+    q.put(l_dataslice)
+
 
 class QGridMapper(AbstractGridMapper):
     '''
@@ -51,7 +70,7 @@ class QGridMapper(AbstractGridMapper):
         **kwargs are passed to the rawmap function
         """
         maxImageMem = self.appConfig.getMaxImageMemory()
-        gridder = xu.Gridder3D(self.nx, self.ny, self.nz)
+        gridder = xu.FuzzyGridder3D(self.nx, self.ny, self.nz)
         gridder.KeepData(True)
         rangeBounds = self.dataSource.getRangeBounds()
         logger.debug(rangeBounds)
@@ -82,7 +101,7 @@ class QGridMapper(AbstractGridMapper):
                     # convert data to rectangular grid in reciprocal space
                     try:
                         gridder(qx, qy, qz, intensity)
-                        progress += 100
+                        progress += 50
                         if self.progressUpdater is not None:
                             self.progressUpdater(progress)
                     except InputError as ex:
@@ -108,7 +127,7 @@ class QGridMapper(AbstractGridMapper):
                             try:
                                 gridder(qx, qy, qz, intensity)
                         
-                                progress += 1.0/nPasses* 100.0
+                                progress += 1.0/nPasses* 50.0
                                 if self.progressUpdater is not None:
                                     self.progressUpdater(progress)
                             except InputError as ex:
@@ -119,10 +138,57 @@ class QGridMapper(AbstractGridMapper):
                                 print ("intensity Size: " + str(intensity.shape))
                                 raise InputError(ex)
                         else:
-                            progress += 1.0/nPasses* 100.0
+                            progress += 1.0/nPasses* 50.0
                             if self.progressUpdater is not None:
                                 self.progressUpdater(progress)
+            progress=50.0
+            self.progressUpdater(progress)
+            
+            
+            #Interpolating zero values
+            data = gridder.data.copy()
+            
+            #First, set all zeros to NANs
+            data[data ==0]=np.nan
+            
+            #Setting some parameters
+            nprocs = 8
+            n_slices =data.shape[2]
+            jump = int(n_slices/nprocs)
+            
+            #Init multiprocessing variables
+            queue, process, index = [], [], []
+            
+            logger.info('Starting Interpolation using ' +str(nprocs)+' CPUs')
+            
+            for i in range(nprocs):
+                queue.append(Queue())
+                if i == (nprocs-1):
+                    finalidx = n_slices
+                else:
+                   finalidx = (i + 1) * jump
+                dataslice = data[:,:,(i*jump):finalidx]
+                logger.debug('Starting process: '+str(i)+ ' for slices ' +str(i*jump)+ ' to '+str(finalidx))
+                process.append(Process(target=wrapper_interpolate_frame, args=(dataslice, queue[-1],i,)))
+                process[-1].start()
+                index.append(i)
+                
+            logger.debug('All processes started!')
+            
+            for q, p,i in zip(queue, process,index):
+                if i == (nprocs-1):
+                    finalidx = n_slices
+                else:
+                   finalidx = (i + 1) * jump
+                logger.debug('Getting Data from proccess: '+str(i)+ ' for slices ' +str(i*jump)+ ' to '+str(finalidx))
+                data[:,:,(i*jump):finalidx]=q.get()
+                p.join()
+                progress += 1.0/nprocs * 50.0
+                if self.progressUpdater is not None:
+                    self.progressUpdater(progress)
+
             self.progressUpdater(100.0)
-        return gridder.xaxis,gridder.yaxis,gridder.zaxis,gridder.data,gridder
+            
+        return gridder.xaxis,gridder.yaxis,gridder.zaxis,data,gridder
     
     
