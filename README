@@ -43,3 +43,10 @@ History:
 			https://github.com/AdvancedPhotonSource/rsMap3D - V 1.2.1 
 		Tested under Win10, Py 3.6.4, Conda 4.6.14 (build 3.4.1)
 		Package dependencies are specified in './win_condaenv.yml'
+		
+	Version 2.0.1:
+		Bugfix: 
+			-) Imagereader for Pilatus 100K EDF format - conversion from binary was wrong.
+		Changes:
+			-) Changed gridmapper from xu.Gridder3D to xu.FuzzyGridder3D for higher resolution.
+			-) Added multiprocessed interpolation scheme to avoid zero intensity voxels.
