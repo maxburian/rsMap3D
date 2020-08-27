@@ -152,7 +152,7 @@ class QGridMapper(AbstractGridMapper):
             data[data ==0]=np.nan
             
             #Setting some parameters
-            nprocs = 8
+            nprocs = 4
             n_slices =data.shape[2]
             jump = int(n_slices/nprocs)
             
